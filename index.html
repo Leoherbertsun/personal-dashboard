@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Life Dashboard</title>
+<style>
+  /* ========== Reset & Base ========== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0a0a0a;
+    --surface:   #111111;
+    --surface-2: #1a1a1a;
+    --border:    #222222;
+    --border-h:  #333333;
+    --text:      #ededed;
+    --text-2:    #888888;
+    --text-3:    #555555;
+    --accent:    #0070f3;
+    --accent-h:  #1a8cff;
+    --red:       #e5484d;
+    --green:     #46a758;
+    --yellow:    #f5a623;
+    --purple:    #8e4ec6;
+    --radius:    8px;
+    --radius-lg: 12px;
+    --font:      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --mono:      'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+  }
+
+  html { font-size: 16px; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-h); }
+
+  /* ========== Setup Screen ========== */
+  .setup-overlay {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg);
+    z-index: 1000;
+    animation: fadeIn .3s ease;
+  }
+
+  .setup-card {
+    width: 100%; max-width: 420px;
+    padding: 40px 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 30px rgba(0,0,0,.5);
+  }
+
+  .setup-card h1 {
+    font-size: 1.5rem; font-weight: 600;
+    margin-bottom: 4px; letter-spacing: -.02em;
+  }
+
+  .setup-card p {
+    color: var(--text-2); font-size: .875rem;
+    margin-bottom: 28px;
+  }
+
+  .setup-card label {
+    display: block; font-size: .8rem;
+    color: var(--text-2); margin-bottom: 6px;
+    font-weight: 500; text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+
+  .setup-card input {
+    width: 100%; padding: 10px 14px;
+    background: var(--bg); color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: .9375rem; font-family: var(--mono);
+    outline: none; transition: border-color .15s;
+    margin-bottom: 20px;
+  }
+
+  .setup-card input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,112,243,.15);
+  }
+
+  .setup-card input::placeholder { color: var(--text-3); }
+
+  .setup-card button {
+    width: 100%; padding: 12px;
+    background: var(--text);
+    color: var(--bg);
+    border: none; border-radius: var(--radius);
+    font-size: .9375rem; font-weight: 600;
+    cursor: pointer; transition: opacity .15s;
+  }
+
+  .setup-card button:hover { opacity: .85; }
+
+  /* ========== Header ========== */
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(12px);
+    background: rgba(17,17,17,.8);
+  }
+
+  .header-left { display: flex; align-items: center; gap: 12px; }
+
+  .header-dot {
+    width: 8px; height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .header h1 {
+    font-size: 1rem; font-weight: 600;
+    letter-spacing: -.01em;
+  }
+
+  .header h1 span { color: var(--text-3); font-weight: 400; }
+
+  .header-actions { display: flex; gap: 8px; }
+
+  .btn-icon {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-2);
+    cursor: pointer; transition: all .15s;
+    font-size: .875rem;
+  }
+
+  .btn-icon:hover {
+    background: var(--surface-2);
+    border-color: var(--border-h);
+    color: var(--text);
+  }
+
+  /* ========== Loading & Error ========== */
+  .loading-container {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 120px 24px; gap: 20px;
+  }
+
+  .spinner {
+    width: 24px; height: 24px;
+    border: 2px solid var(--border);
+    border-top-color: var(--text);
+    border-radius: 50%;
+    animation: spin .6s linear infinite;
+  }
+
+  .loading-text {
+    color: var(--text-2); font-size: .875rem;
+  }
+
+  .error-box {
+    margin: 24px; padding: 16px 20px;
+    background: rgba(229,72,77,.08);
+    border: 1px solid rgba(229,72,77,.25);
+    border-radius: var(--radius);
+    color: var(--red);
+    font-size: .875rem;
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .error-box svg { flex-shrink: 0; }
+
+  /* ========== Dashboard Layout ========== */
+  .dashboard {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  /* Status Banner */
+  .status-section {
+    margin-bottom: 32px;
+  }
+
+  .section-label {
+    font-size: .75rem; font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text-3);
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1; height: 1px;
+    background: var(--border);
+  }
+
+  .status-card {
+    padding: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    text-align: center;
+  }
+
+  .status-card .status-text {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -.03em;
+    line-height: 1.3;
+    background: linear-gradient(135deg, var(--text) 0%, var(--text-2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .status-card .status-meta {
+    margin-top: 8px;
+    font-size: .8rem;
+    color: var(--text-3);
+  }
+
+  .status-empty {
+    color: var(--text-3);
+    font-style: italic;
+    font-size: 1rem;
+  }
+
+  /* Main Grid */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  /* Panels */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .panel-title {
+    font-size: .8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--text-2);
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .panel-count {
+    background: var(--surface-2);
+    color: var(--text-3);
+    font-size: .6875rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+    font-family: var(--mono);
+  }
+
+  .panel-body {
+    padding: 8px;
+    max-height: 480px;
+    overflow-y: auto;
+  }
+
+  .panel-body::-webkit-scrollbar { width: 4px; }
+  .panel-body::-webkit-scrollbar-track { background: transparent; }
+  .panel-body::-webkit-scrollbar-thumb { background: var(--border-h); border-radius: 2px; }
+
+  .empty-state {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-3);
+    font-size: .875rem;
+  }
+
+  /* Todo Items */
+  .todo-item {
+    display: flex; align-items: flex-start;
+    gap: 12px; padding: 12px;
+    border-radius: var(--radius);
+    transition: background .15s;
+  }
+
+  .todo-item:hover { background: var(--surface-2); }
+
+  .todo-checkbox {
+    flex-shrink: 0;
+    width: 18px; height: 18px;
+    border: 1.5px solid var(--border-h);
+    border-radius: 4px;
+    margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .todo-content { flex: 1; min-width: 0; }
+
+  .todo-title {
+    font-size: .9375rem;
+    font-weight: 500;
+    letter-spacing: -.01em;
+    word-wrap: break-word;
+  }
+
+  .todo-title a { color: var(--text); }
+  .todo-title a:hover { color: var(--accent); }
+
+  .todo-meta {
+    font-size: .75rem;
+    color: var(--text-3);
+    margin-top: 4px;
+  }
+
+  /* Idea Cards */
+  .idea-card {
+    padding: 16px;
+    margin: 4px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    transition: all .15s;
+    background: var(--bg);
+  }
+
+  .idea-card:hover {
+    border-color: var(--border-h);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,.3);
+  }
+
+  .idea-card + .idea-card { margin-top: 8px; }
+
+  .idea-title {
+    font-size: .9375rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    letter-spacing: -.01em;
+  }
+
+  .idea-title a { color: var(--text); }
+  .idea-title a:hover { color: var(--accent); }
+
+  .idea-body {
+    font-size: .8125rem;
+    color: var(--text-2);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .idea-footer {
+    margin-top: 10px;
+    font-size: .75rem;
+    color: var(--text-3);
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* Log Stream */
+  .log-section { margin-bottom: 32px; }
+
+  .log-item {
+    display: flex;
+    gap: 16px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    transition: background .15s;
+  }
+
+  .log-item:last-child { border-bottom: none; }
+  .log-item:hover { background: var(--surface-2); }
+
+  .log-time {
+    flex-shrink: 0;
+    font-size: .75rem;
+    font-family: var(--mono);
+    color: var(--text-3);
+    padding-top: 2px;
+    min-width: 80px;
+  }
+
+  .log-content { flex: 1; min-width: 0; }
+
+  .log-title {
+    font-size: .9375rem;
+    font-weight: 500;
+  }
+
+  .log-title a { color: var(--text); }
+  .log-title a:hover { color: var(--accent); }
+
+  .log-body {
+    font-size: .8125rem;
+    color: var(--text-2);
+    margin-top: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 32px 24px;
+    color: var(--text-3);
+    font-size: .75rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .footer a { color: var(--text-3); }
+  .footer a:hover { color: var(--text-2); }
+
+  /* ========== Animations ========== */
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .4; }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in {
+    animation: slideUp .4s ease forwards;
+    opacity: 0;
+  }
+
+  /* ========== Responsive ========== */
+  @media (max-width: 768px) {
+    .main-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .status-card .status-text {
+      font-size: 1.25rem;
+    }
+
+    .header h1 { font-size: .875rem; }
+
+    .dashboard { padding: 16px; }
+
+    .log-item { flex-direction: column; gap: 4px; }
+    .log-time { min-width: unset; }
+  }
+
+  @media (max-width: 480px) {
+    .setup-card { margin: 16px; padding: 28px 20px; }
+  }
+
+  /* ========== Label Badges ========== */
+  .label-badge {
+    display: inline-block;
+    font-size: .6875rem;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+</style>
+</head>
+<body>
+
+<!-- Setup Screen -->
+<div id="setup" class="setup-overlay" style="display:none;">
+  <div class="setup-card">
+    <h1>Life Dashboard</h1>
+    <p>连接你的 GitHub 仓库，用 Issues 管理生活。</p>
+    <label for="input-user">GitHub 用户名</label>
+    <input id="input-user" type="text" placeholder="e.g. octocat" autocomplete="off" spellcheck="false">
+    <label for="input-repo">仓库名称</label>
+    <input id="input-repo" type="text" placeholder="e.g. life-dashboard" autocomplete="off" spellcheck="false">
+    <button id="btn-save" type="button">开始使用 →</button>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="app" style="display:none;">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="header-dot"></div>
+      <h1 id="header-title">Dashboard</h1>
+    </div>
+    <div class="header-actions">
+      <button class="btn-icon" id="btn-refresh" title="刷新数据">↻</button>
+      <button class="btn-icon" id="btn-reset" title="更换仓库">⚙</button>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <div id="content"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    Powered by <a href="https://docs.github.com/en/rest" target="_blank">GitHub API</a> · Data from Issues
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ===== DOM =====
+  const $setup   = document.getElementById('setup');
+  const $app     = document.getElementById('app');
+  const $content = document.getElementById('content');
+  const $title   = document.getElementById('header-title');
+  const $user    = document.getElementById('input-user');
+  const $repo    = document.getElementById('input-repo');
+  const $save    = document.getElementById('btn-save');
+  const $refresh = document.getElementById('btn-refresh');
+  const $reset   = document.getElementById('btn-reset');
+
+  // ===== Config =====
+  const LS_USER = 'dash_gh_user';
+  const LS_REPO = 'dash_gh_repo';
+  const API = 'https://api.github.com';
+
+  function getConfig() {
+    const params = new URLSearchParams(window.location.search);
+    const user = params.get('user') || localStorage.getItem(LS_USER) || '';
+    const repo = params.get('repo') || localStorage.getItem(LS_REPO) || '';
+    return { user: user.trim(), repo: repo.trim() };
+  }
+
+  function saveConfig(user, repo) {
+    localStorage.setItem(LS_USER, user.trim());
+    localStorage.setItem(LS_REPO, repo.trim());
+  }
+
+  function clearConfig() {
+    localStorage.removeItem(LS_USER);
+    localStorage.removeItem(LS_REPO);
+  }
+
+  // ===== Helpers =====
+  function escapeHTML(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  function timeAgo(date) {
+    const now = new Date();
+    const diff = now - new Date(date);
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return '刚刚';
+    if (mins < 60) return mins + ' 分钟前';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + ' 小时前';
+    const days = Math.floor(hrs / 24);
+    if (days < 30) return days + ' 天前';
+    const months = Math.floor(days / 30);
+    return months + ' 个月前';
+  }
+
+  function formatDate(date) {
+    const d = new Date(date);
+    return d.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+  }
+
+  function labelColor(color) {
+    return `background: #${color}22; color: #${color}; border: 1px solid #${color}44;`;
+  }
+
+  function renderLabels(labels, exclude) {
+    return labels
+      .filter(l => l.name.toLowerCase() !== exclude.toLowerCase())
+      .map(l => `<span class="label-badge" style="${labelColor(l.color)}">${escapeHTML(l.name)}</span>`)
+      .join('');
+  }
+
+  // ===== Fetch Issues =====
+  async function fetchAllIssues(user, repo) {
+    const issues = [];
+    let page = 1;
+    const perPage = 100;
+    while (true) {
+      const url = `${API}/repos/${user}/${repo}/issues?state=open&per_page=${perPage}&page=${page}&sort=created&direction=desc`;
+      const res = await fetch(url, {
+        headers: { 'Accept': 'application/vnd.github.v3+json' }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      // Filter out pull requests (they also appear in /issues)
+      const onlyIssues = data.filter(i => !i.pull_request);
+      issues.push(...onlyIssues);
+      if (data.length < perPage) break;
+      page++;
+    }
+    return issues;
+  }
+
+  // ===== Classify Issues =====
+  function classify(issues) {
+    const result = { status: [], todo: [], idea: [], log: [] };
+    for (const issue of issues) {
+      const names = issue.labels.map(l => l.name.toLowerCase());
+      if (names.includes('status')) result.status.push(issue);
+      else if (names.includes('todo')) result.todo.push(issue);
+      else if (names.includes('idea')) result.idea.push(issue);
+      else result.log.push(issue);
+    }
+    return result;
+  }
+
+  // ===== Render =====
+  function renderDashboard(data, user, repo) {
+    const { status, todo, idea, log } = data;
+    const repoURL = `https://github.com/${user}/${repo}`;
+
+    let html = '<div class="dashboard">';
+
+    // --- Status ---
+    html += '<div class="status-section fade-in" style="animation-delay:.05s">';
+    html += '<div class="section-label">📡 当前状态</div>';
+    if (status.length > 0) {
+      const latest = status[0];
+      html += `<div class="status-card">
+        <div class="status-text">${escapeHTML(latest.title)}</div>
+        <div class="status-meta">更新于 ${timeAgo(latest.updated_at)}</div>
+      </div>`;
+    } else {
+      html += `<div class="status-card"><div class="status-empty">暂无状态 — 创建带 "Status" 标签的 Issue 来更新</div></div>`;
+    }
+    html += '</div>';
+
+    // --- Main Grid: Todo + Idea ---
+    html += '<div class="main-grid">';
+
+    // Todo Panel
+    html += '<div class="panel fade-in" style="animation-delay:.1s">';
+    html += `<div class="panel-header">
+      <div class="panel-title">☑ 待办清单</div>
+      <span class="panel-count">${todo.length}</span>
+    </div>`;
+    html += '<div class="panel-body">';
+    if (todo.length === 0) {
+      html += '<div class="empty-state">🎉 暂无待办</div>';
+    } else {
+      for (const item of todo) {
+        html += `<div class="todo-item">
+          <div class="todo-checkbox"></div>
+          <div class="todo-content">
+            <div class="todo-title">
+              <a href="${item.html_url}" target="_blank">${escapeHTML(item.title)}</a>
+              ${renderLabels(item.labels, 'todo')}
+            </div>
+            <div class="todo-meta">#${item.number} · ${timeAgo(item.created_at)}</div>
+          </div>
+        </div>`;
+      }
+    }
+    html += '</div></div>';
+
+    // Idea Panel
+    html += '<div class="panel fade-in" style="animation-delay:.15s">';
+    html += `<div class="panel-header">
+      <div class="panel-title">💡 灵感墙</div>
+      <span class="panel-count">${idea.length}</span>
+    </div>`;
+    html += '<div class="panel-body">';
+    if (idea.length === 0) {
+      html += '<div class="empty-state">等待灵光一现…</div>';
+    } else {
+      for (const item of idea) {
+        html += `<div class="idea-card">
+          <div class="idea-title">
+            <a href="${item.html_url}" target="_blank">${escapeHTML(item.title)}</a>
+            ${renderLabels(item.labels, 'idea')}
+          </div>
+          ${item.body ? `<div class="idea-body">${escapeHTML(item.body)}</div>` : ''}
+          <div class="idea-footer">
+            <span>#${item.number}</span> · <span>${formatDate(item.created_at)}</span>
+          </div>
+        </div>`;
+      }
+    }
+    html += '</div></div>';
+
+    html += '</div>'; // end main-grid
+
+    // --- Log Stream ---
+    html += '<div class="log-section fade-in" style="animation-delay:.2s">';
+    html += '<div class="section-label">📝 日志流</div>';
+    html += '<div class="panel">';
+    html += `<div class="panel-header">
+      <div class="panel-title">未分类 Issues</div>
+      <span class="panel-count">${log.length}</span>
+    </div>`;
+    if (log.length === 0) {
+      html += '<div class="panel-body"><div class="empty-state">没有未分类的 Issue</div></div>';
+    } else {
+      for (const item of log) {
+        html += `<div class="log-item">
+          <div class="log-time">${formatDate(item.created_at)}</div>
+          <div class="log-content">
+            <div class="log-title"><a href="${item.html_url}" target="_blank">${escapeHTML(item.title)}</a></div>
+            ${item.body ? `<div class="log-body">${escapeHTML(item.body)}</div>` : ''}
+          </div>
+        </div>`;
+      }
+    }
+    html += '</div></div>';
+
+    html += '</div>'; // end dashboard
+    $content.innerHTML = html;
+  }
+
+  function showLoading() {
+    $content.innerHTML = `
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <div class="loading-text">正在从 GitHub 获取数据…</div>
+      </div>`;
+  }
+
+  function showError(msg) {
+    $content.innerHTML = `
+      <div class="error-box">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1ZM7.25 4.75a.75.75 0 0 1 1.5 0v3.5a.75.75 0 0 1-1.5 0v-3.5ZM8 11a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+        </svg>
+        <span>${escapeHTML(msg)}</span>
+      </div>`;
+  }
+
+  // ===== Main Flow =====
+  async function loadDashboard() {
+    const { user, repo } = getConfig();
+
+    if (!user || !repo) {
+      $app.style.display = 'none';
+      $setup.style.display = 'flex';
+      $user.focus();
+      return;
+    }
+
+    $setup.style.display = 'none';
+    $app.style.display = 'block';
+    $title.innerHTML = `${escapeHTML(user)} <span>/ ${escapeHTML(repo)}</span>`;
+
+    showLoading();
+
+    try {
+      const issues = await fetchAllIssues(user, repo);
+      const data = classify(issues);
+      renderDashboard(data, user, repo);
+    } catch (err) {
+      showError(`获取失败：${err.message}。请检查用户名和仓库名是否正确，仓库是否为 Public。`);
+    }
+  }
+
+  // ===== Events =====
+  $save.addEventListener('click', () => {
+    const u = $user.value.trim();
+    const r = $repo.value.trim();
+    if (!u || !r) return;
+    saveConfig(u, r);
+    loadDashboard();
+  });
+
+  // Enter key in inputs
+  [$user, $repo].forEach(el => {
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter') $save.click();
+    });
+  });
+
+  $refresh.addEventListener('click', loadDashboard);
+
+  $reset.addEventListener('click', () => {
+    clearConfig();
+    $content.innerHTML = '';
+    loadDashboard();
+  });
+
+  // ===== Init =====
+  loadDashboard();
+})();
+</script>
+
+</body>
+</html>
