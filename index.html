@@ -43,69 +43,6 @@
   a { color: var(--accent); text-decoration: none; }
   a:hover { color: var(--accent-h); }
 
-  /* ========== Setup Screen ========== */
-  .setup-overlay {
-    position: fixed; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--bg);
-    z-index: 1000;
-    animation: fadeIn .3s ease;
-  }
-
-  .setup-card {
-    width: 100%; max-width: 420px;
-    padding: 40px 32px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    box-shadow: 0 8px 30px rgba(0,0,0,.5);
-  }
-
-  .setup-card h1 {
-    font-size: 1.5rem; font-weight: 600;
-    margin-bottom: 4px; letter-spacing: -.02em;
-  }
-
-  .setup-card p {
-    color: var(--text-2); font-size: .875rem;
-    margin-bottom: 28px;
-  }
-
-  .setup-card label {
-    display: block; font-size: .8rem;
-    color: var(--text-2); margin-bottom: 6px;
-    font-weight: 500; text-transform: uppercase;
-    letter-spacing: .05em;
-  }
-
-  .setup-card input {
-    width: 100%; padding: 10px 14px;
-    background: var(--bg); color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    font-size: .9375rem; font-family: var(--mono);
-    outline: none; transition: border-color .15s;
-    margin-bottom: 20px;
-  }
-
-  .setup-card input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(0,112,243,.15);
-  }
-
-  .setup-card input::placeholder { color: var(--text-3); }
-
-  .setup-card button {
-    width: 100%; padding: 12px;
-    background: var(--text);
-    color: var(--bg);
-    border: none; border-radius: var(--radius);
-    font-size: .9375rem; font-weight: 600;
-    cursor: pointer; transition: opacity .15s;
-  }
-
-  .setup-card button:hover { opacity: .85; }
-
   /* ========== Header ========== */
   .header {
     display: flex; align-items: center; justify-content: space-between;
@@ -479,10 +416,6 @@
     .log-time { min-width: unset; }
   }
 
-  @media (max-width: 480px) {
-    .setup-card { margin: 16px; padding: 28px 20px; }
-  }
-
   /* ========== Label Badges ========== */
   .label-badge {
     display: inline-block;
@@ -497,21 +430,8 @@
 </head>
 <body>
 
-<!-- Setup Screen -->
-<div id="setup" class="setup-overlay" style="display:none;">
-  <div class="setup-card">
-    <h1>Life Dashboard</h1>
-    <p>连接你的 GitHub 仓库，用 Issues 管理生活。</p>
-    <label for="input-user">GitHub 用户名</label>
-    <input id="input-user" type="text" placeholder="e.g. octocat" autocomplete="off" spellcheck="false">
-    <label for="input-repo">仓库名称</label>
-    <input id="input-repo" type="text" placeholder="e.g. life-dashboard" autocomplete="off" spellcheck="false">
-    <button id="btn-save" type="button">开始使用 →</button>
-  </div>
-</div>
-
 <!-- Main App -->
-<div id="app" style="display:none;">
+<div id="app">
 
   <!-- Header -->
   <header class="header">
@@ -521,7 +441,6 @@
     </div>
     <div class="header-actions">
       <button class="btn-icon" id="btn-refresh" title="刷新数据">↻</button>
-      <button class="btn-icon" id="btn-reset" title="更换仓库">⚙</button>
     </div>
   </header>
 
@@ -539,37 +458,14 @@
   'use strict';
 
   // ===== DOM =====
-  const $setup   = document.getElementById('setup');
-  const $app     = document.getElementById('app');
   const $content = document.getElementById('content');
   const $title   = document.getElementById('header-title');
-  const $user    = document.getElementById('input-user');
-  const $repo    = document.getElementById('input-repo');
-  const $save    = document.getElementById('btn-save');
   const $refresh = document.getElementById('btn-refresh');
-  const $reset   = document.getElementById('btn-reset');
 
   // ===== Config =====
-  const LS_USER = 'dash_gh_user';
-  const LS_REPO = 'dash_gh_repo';
+  const GH_USER = 'Leoherbertsun';
+  const GH_REPO = 'personal-dashboard';
   const API = 'https://api.github.com';
-
-  function getConfig() {
-    const params = new URLSearchParams(window.location.search);
-    const user = params.get('user') || localStorage.getItem(LS_USER) || '';
-    const repo = params.get('repo') || localStorage.getItem(LS_REPO) || '';
-    return { user: user.trim(), repo: repo.trim() };
-  }
-
-  function saveConfig(user, repo) {
-    localStorage.setItem(LS_USER, user.trim());
-    localStorage.setItem(LS_REPO, repo.trim());
-  }
-
-  function clearConfig() {
-    localStorage.removeItem(LS_USER);
-    localStorage.removeItem(LS_REPO);
-  }
 
   // ===== Helpers =====
   function escapeHTML(str) {
@@ -768,17 +664,8 @@
 
   // ===== Main Flow =====
   async function loadDashboard() {
-    const { user, repo } = getConfig();
-
-    if (!user || !repo) {
-      $app.style.display = 'none';
-      $setup.style.display = 'flex';
-      $user.focus();
-      return;
-    }
-
-    $setup.style.display = 'none';
-    $app.style.display = 'block';
+    const user = GH_USER;
+    const repo = GH_REPO;
     $title.innerHTML = `${escapeHTML(user)} <span>/ ${escapeHTML(repo)}</span>`;
 
     showLoading();
@@ -793,28 +680,7 @@
   }
 
   // ===== Events =====
-  $save.addEventListener('click', () => {
-    const u = $user.value.trim();
-    const r = $repo.value.trim();
-    if (!u || !r) return;
-    saveConfig(u, r);
-    loadDashboard();
-  });
-
-  // Enter key in inputs
-  [$user, $repo].forEach(el => {
-    el.addEventListener('keydown', e => {
-      if (e.key === 'Enter') $save.click();
-    });
-  });
-
   $refresh.addEventListener('click', loadDashboard);
-
-  $reset.addEventListener('click', () => {
-    clearConfig();
-    $content.innerHTML = '';
-    loadDashboard();
-  });
 
   // ===== Init =====
   loadDashboard();
