@@ -21,7 +21,6 @@
     --red:       #e03e3e;
     --green:     #0f7b6c;
     --yellow:    #dfab01;
-    --purple:    #6940a5;
     --radius:    6px;
     --radius-lg: 10px;
     --font:      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -38,9 +37,7 @@
     line-height: 1.6;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
   }
-
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
 
@@ -58,6 +55,7 @@
     border-radius: 50%;
     animation: pulse 2s ease-in-out infinite;
   }
+  .header-dot.off { background: var(--text-3); animation: none; }
   .header h1 {
     font-size: .9375rem; font-weight: 600;
     letter-spacing: -.01em; color: var(--text);
@@ -96,7 +94,35 @@
     background: var(--border);
   }
 
-  /* ===== Countdown ===== */
+  /* Auth banner */
+  .auth-banner {
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    background: #fff8e6;
+    border: 1px solid #f3d77a;
+    border-radius: var(--radius-lg);
+    display: flex; align-items: center; gap: 12px;
+    font-size: .875rem;
+    color: #6b5510;
+  }
+  .auth-banner.ok {
+    background: #ecfdf5; border-color: #a7e3cc; color: #0a6b5c;
+  }
+  .auth-banner button {
+    margin-left: auto;
+    padding: 6px 12px;
+    background: var(--text);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-size: .8125rem;
+    cursor: pointer;
+  }
+  .auth-banner button:hover { background: #222; }
+  .auth-banner.ok button { background: transparent; color: var(--text-2); border: 1px solid var(--border); }
+  .auth-banner.ok button:hover { background: var(--surface); }
+
+  /* Countdown */
   .countdown-section { margin-bottom: 28px; }
   .countdown-card {
     padding: 36px 28px;
@@ -105,14 +131,11 @@
     border-radius: var(--radius-lg);
     text-align: center;
     box-shadow: var(--shadow-sm);
-    position: relative;
-    overflow: hidden;
   }
   .countdown-label {
     font-size: .8125rem;
     color: var(--text-2);
     margin-bottom: 10px;
-    letter-spacing: .02em;
   }
   .countdown-days {
     font-size: 4.5rem;
@@ -142,7 +165,6 @@
     font-family: var(--mono);
   }
 
-  /* ===== Two column grid ===== */
   .grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -188,7 +210,6 @@
   }
   .panel-body { padding: 16px 18px; }
 
-  /* ===== Thought form ===== */
   .form-row { display: flex; flex-direction: column; gap: 10px; }
   textarea.input {
     width: 100%;
@@ -201,13 +222,24 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
     resize: vertical;
-    transition: border-color .15s, background .15s;
   }
   textarea.input:focus {
     outline: none;
     border-color: var(--accent);
     background: #fff;
   }
+  input.input {
+    width: 100%;
+    padding: 10px 12px;
+    font-family: var(--mono);
+    font-size: .8125rem;
+    color: var(--text);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  input.input:focus { outline: none; border-color: var(--accent); background: #fff; }
+
   .btn {
     display: inline-flex; align-items: center; justify-content: center;
     gap: 6px;
@@ -219,10 +251,11 @@
     border: none;
     border-radius: var(--radius);
     cursor: pointer;
-    transition: background .15s, transform .08s;
+    transition: background .15s, transform .08s, opacity .15s;
   }
   .btn:hover { background: #222; }
   .btn:active { transform: translateY(1px); }
+  .btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
   .btn.btn-accent { background: var(--accent); }
   .btn.btn-accent:hover { background: var(--accent-h); }
   .btn.btn-ghost {
@@ -234,7 +267,6 @@
   .btn-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .btn-row .hint { font-size: .75rem; color: var(--text-3); margin-left: auto; }
 
-  /* ===== Rating stars ===== */
   .rating-wrap {
     display: flex; flex-direction: column; gap: 12px;
     align-items: center;
@@ -267,22 +299,21 @@
     cursor: pointer;
     transition: all .12s;
   }
-  .rating-btn:hover {
+  .rating-btn:hover:not(:disabled) {
     background: #fff;
     border-color: var(--border-h);
     color: var(--text);
-    transform: translateY(-1px);
   }
   .rating-btn.active {
     background: var(--text);
     border-color: var(--text);
     color: #fff;
   }
+  .rating-btn:disabled { opacity: .5; cursor: not-allowed; }
   @media (max-width: 500px) {
     .rating-buttons { grid-template-columns: repeat(5, 1fr); }
   }
 
-  /* ===== History ===== */
   .history-section { margin-bottom: 24px; }
   .history-item {
     display: flex;
@@ -297,50 +328,35 @@
     font-family: var(--mono);
     color: var(--text-3);
     padding-top: 3px;
-    min-width: 88px;
+    min-width: 130px;
   }
   .history-content { flex: 1; min-width: 0; }
-  .history-top {
-    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    margin-bottom: 4px;
-  }
-  .history-score {
-    display: inline-flex; align-items: center; gap: 3px;
-    font-family: var(--mono);
+  .history-type {
+    display: inline-flex; align-items: center; gap: 4px;
     font-size: .75rem;
     font-weight: 600;
     padding: 2px 8px;
     border-radius: 10px;
-    background: var(--surface-2);
-    color: var(--text-2);
+    margin-right: 8px;
   }
-  .history-score.high { background: #e7f5ee; color: var(--green); }
-  .history-score.mid  { background: #fdf6e0; color: #a77f02; }
-  .history-score.low  { background: #fdeeee; color: var(--red); }
-  .history-thought {
+  .history-type.thought { background: #eaf4fa; color: #1a6f97; }
+  .history-type.rating  { background: #fdf6e0; color: #a77f02; }
+  .history-text {
     font-size: .9375rem;
     color: var(--text);
     white-space: pre-wrap;
     word-break: break-word;
+    margin-top: 4px;
   }
-  .history-empty { font-size: .875rem; color: var(--text-3); font-style: italic; }
-  .history-actions {
-    flex-shrink: 0;
-    display: flex; gap: 4px; align-items: flex-start; padding-top: 2px;
-  }
-  .delete-btn {
-    width: 24px; height: 24px;
-    background: transparent;
-    border: none;
+  .history-link {
+    margin-top: 4px;
+    font-size: .6875rem;
+    font-family: var(--mono);
     color: var(--text-3);
-    cursor: pointer;
-    border-radius: var(--radius);
-    font-size: .875rem;
-    transition: all .12s;
   }
-  .delete-btn:hover { background: #fdeeee; color: var(--red); }
+  .history-link a { color: var(--text-3); }
+  .history-empty { padding: 32px; text-align: center; font-size: .875rem; color: var(--text-3); }
 
-  /* ===== Stats ===== */
   .stats-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -370,7 +386,45 @@
     letter-spacing: .04em;
   }
 
-  /* ===== Toast ===== */
+  .modal-mask {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.4);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .modal-mask.show { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: var(--radius-lg);
+    max-width: 480px; width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    overflow: hidden;
+  }
+  .modal-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .modal-body { padding: 18px 20px; }
+  .modal-body p { font-size: .875rem; color: var(--text-2); margin-bottom: 10px; }
+  .modal-body ol { font-size: .8125rem; color: var(--text-2); padding-left: 22px; margin-bottom: 14px; line-height: 1.7; }
+  .modal-body code {
+    background: var(--surface-2);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: .8125rem;
+    color: var(--text);
+  }
+  .modal-footer {
+    padding: 14px 20px;
+    background: var(--surface-2);
+    display: flex; gap: 8px; justify-content: flex-end;
+  }
+
   .toast {
     position: fixed;
     bottom: 24px; left: 50%;
@@ -384,21 +438,31 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity .25s, transform .25s;
-    z-index: 1000;
+    z-index: 1100;
+    max-width: 90%;
   }
-  .toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.err  { background: var(--red); }
 
-  /* ===== Footer ===== */
   .footer {
     text-align: center;
     padding: 24px;
     color: var(--text-3);
     font-size: .75rem;
   }
+  .footer a { color: var(--text-3); }
 
+  .spinner-inline {
+    display: inline-block;
+    width: 12px; height: 12px;
+    border: 2px solid rgba(255,255,255,.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .6s linear infinite;
+    margin-right: 4px;
+    vertical-align: -2px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
   @keyframes slideUp {
     from { opacity: 0; transform: translateY(8px); }
@@ -411,17 +475,19 @@
 
 <header class="header">
   <div class="header-left">
-    <div class="header-dot"></div>
+    <div class="header-dot" id="header-dot"></div>
     <h1>每日仪表盘 <span>· 倒计时 & 日记</span></h1>
   </div>
   <div class="header-actions">
-    <button class="btn-icon" id="btn-export" title="导出数据">⬇</button>
+    <button class="btn-icon" id="btn-refresh" title="刷新">↻</button>
+    <button class="btn-icon" id="btn-auth" title="GitHub Token">🔑</button>
   </div>
 </header>
 
 <div class="dashboard">
 
-  <!-- Countdown -->
+  <div id="auth-banner"></div>
+
   <section class="countdown-section fade-in" style="animation-delay:.05s">
     <div class="section-label">⏳ 倒计时</div>
     <div class="countdown-card">
@@ -434,25 +500,22 @@
     </div>
   </section>
 
-  <!-- Stats -->
   <section class="stats-row fade-in" style="animation-delay:.08s">
     <div class="stat-card">
-      <div class="stat-value" id="stat-entries">0</div>
-      <div class="stat-label">记录天数</div>
+      <div class="stat-value" id="stat-entries">—</div>
+      <div class="stat-label">总记录数</div>
     </div>
     <div class="stat-card">
       <div class="stat-value" id="stat-avg">—</div>
       <div class="stat-label">平均分</div>
     </div>
     <div class="stat-card">
-      <div class="stat-value" id="stat-streak">0</div>
-      <div class="stat-label">连续天数</div>
+      <div class="stat-value" id="stat-days">—</div>
+      <div class="stat-label">记录天数</div>
     </div>
   </section>
 
-  <!-- Today's input -->
   <div class="grid-2">
-    <!-- Thought -->
     <section class="panel fade-in" style="animation-delay:.1s">
       <div class="panel-header">
         <div class="panel-title">✍ 今日想法</div>
@@ -460,16 +523,15 @@
       </div>
       <div class="panel-body">
         <div class="form-row">
-          <textarea class="input" id="thought-input" placeholder="记录一下今天的想法、状态、心情…"></textarea>
+          <textarea class="input" id="thought-input" placeholder="写点什么…保存后会作为一个 commit 推到 GitHub"></textarea>
           <div class="btn-row">
             <button class="btn btn-accent" id="btn-save-thought">保存想法</button>
-            <span class="hint" id="thought-hint"></span>
+            <span class="hint" id="thought-hint">每次保存都是一个 commit</span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Rating -->
     <section class="panel fade-in" style="animation-delay:.15s">
       <div class="panel-header">
         <div class="panel-title">⭐ 今日打分</div>
@@ -480,30 +542,56 @@
           <div class="rating-display"><span id="rating-value">—</span><span class="of"> / 10</span></div>
           <div class="rating-buttons" id="rating-buttons"></div>
           <div class="btn-row" style="width:100%; justify-content:center;">
-            <span class="hint" id="rating-hint" style="margin-left:0"></span>
+            <span class="hint" id="rating-hint" style="margin-left:0">点数字直接记录</span>
           </div>
         </div>
       </div>
     </section>
   </div>
 
-  <!-- History -->
   <section class="history-section fade-in" style="animation-delay:.2s">
     <div class="section-label">📖 历史记录</div>
     <div class="panel">
       <div class="panel-header">
-        <div class="panel-title">全部记录</div>
-        <span class="panel-count" id="history-count">0</span>
+        <div class="panel-title">全部记录（来自 GitHub commits）</div>
+        <span class="panel-count" id="history-count">—</span>
       </div>
-      <div id="history-list"></div>
+      <div id="history-list">
+        <div class="history-empty">加载中…</div>
+      </div>
     </div>
   </section>
 
 </div>
 
 <footer class="footer">
-  数据保存在浏览器本地（localStorage） · 清空浏览器数据会丢失记录
+  每一条想法 / 打分都会作为独立 commit 推送到
+  <a href="https://github.com/Leoherbertsun/personal-dashboard/tree/main/data/entries" target="_blank">leoherbertsun/personal-dashboard</a>
 </footer>
+
+<div class="modal-mask" id="modal-mask">
+  <div class="modal">
+    <div class="modal-header">配置 GitHub Token</div>
+    <div class="modal-body">
+      <p>因为每次保存都要写入 GitHub 仓库（生成一个 commit），需要一个 Personal Access Token。</p>
+      <ol>
+        <li>打开 <a href="https://github.com/settings/tokens?type=beta" target="_blank">github.com/settings/tokens</a> → <code>Generate new token (Fine-grained)</code></li>
+        <li><b>Repository access</b>：选 <code>Only select repositories</code> → 勾 <code>personal-dashboard</code></li>
+        <li><b>Permissions → Repository permissions</b>：把 <code>Contents</code> 设为 <b>Read and write</b></li>
+        <li>生成后复制 Token（以 <code>github_pat_</code> 开头），粘贴到下方</li>
+      </ol>
+      <input type="password" class="input" id="token-input" placeholder="github_pat_…">
+      <div style="margin-top:8px; font-size:.75rem; color: var(--text-3);">
+        Token 仅保存在你这台浏览器的 localStorage 中，不会上传。
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="btn-token-clear">删除 Token</button>
+      <button class="btn btn-ghost" id="btn-token-cancel">取消</button>
+      <button class="btn" id="btn-token-save">保存</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -511,33 +599,84 @@
 (function () {
   'use strict';
 
-  const TARGET_DATE = new Date(2026, 8, 1); // 2026-09-01 (month is 0-indexed)
-  const STORAGE_KEY = 'daily-dashboard-v1';
+  // ===== Config =====
+  const TARGET_DATE = new Date(2026, 8, 1); // 2026-09-01
+  const OWNER = 'Leoherbertsun';
+  const REPO  = 'personal-dashboard';
+  const BRANCH = 'main';
+  const ENTRIES_DIR = 'data/entries';
+  const TOKEN_KEY = 'gh-pat-v1';
+  const API = 'https://api.github.com';
 
   const $ = (id) => document.getElementById(id);
 
-  // ===== Storage =====
-  function loadData() {
+  // ===== Token =====
+  function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
+  function setToken(t) {
+    if (t) localStorage.setItem(TOKEN_KEY, t);
+    else   localStorage.removeItem(TOKEN_KEY);
+  }
+
+  // ===== GitHub API =====
+  async function ghFetch(path, opts = {}) {
+    const headers = Object.assign({
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    }, opts.headers || {});
+    const token = getToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    if (opts.body && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
+    const res = await fetch(`${API}${path}`, { ...opts, headers });
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`;
+      try { const j = await res.json(); if (j.message) msg = j.message; } catch (e) {}
+      throw new Error(msg);
+    }
+    if (res.status === 204) return null;
+    return res.json();
+  }
+
+  function b64encode(str) {
+    return btoa(unescape(encodeURIComponent(str)));
+  }
+
+  async function createEntryFile(entry, commitMsg) {
+    const safeStamp = entry.createdAt.replace(/[:.]/g, '-');
+    const path = `${ENTRIES_DIR}/${safeStamp}-${entry.type}.json`;
+    return ghFetch(`/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(path).replace(/%2F/g,'/')}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        message: commitMsg,
+        content: b64encode(JSON.stringify(entry, null, 2) + '\n'),
+        branch: BRANCH,
+      }),
+    });
+  }
+
+  async function listEntries() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return {};
-      return JSON.parse(raw) || {};
+      const items = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${ENTRIES_DIR}?ref=${BRANCH}`);
+      if (!Array.isArray(items)) return [];
+      return items.filter(i => i.type === 'file' && i.name.endsWith('.json'));
     } catch (e) {
-      return {};
+      if (/not\s*found|404/i.test(e.message)) return [];
+      throw e;
     }
   }
-  function saveData(data) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  async function fetchEntry(item) {
+    // download_url hits raw.githubusercontent.com — no API rate limit
+    const r = await fetch(item.download_url, { cache: 'no-store' });
+    if (!r.ok) return null;
+    try {
+      const data = await r.json();
+      data._path = item.path;
+      data._sha = item.sha;
+      return data;
+    } catch (e) { return null; }
   }
 
   // ===== Date helpers =====
-  function todayKey() {
-    const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
-  }
   function startOfDay(d) {
     const x = new Date(d);
     x.setHours(0, 0, 0, 0);
@@ -547,15 +686,14 @@
     const MS = 24 * 60 * 60 * 1000;
     return Math.round((startOfDay(b) - startOfDay(a)) / MS);
   }
-  function formatDateCN(dateStr) {
-    const [y, m, d] = dateStr.split('-');
-    return `${y}年${parseInt(m)}月${parseInt(d)}日`;
+  function todayKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   }
 
-  // ===== Countdown =====
+  // ===== UI: countdown =====
   function renderCountdown() {
-    const now = new Date();
-    const diff = daysBetween(now, TARGET_DATE);
+    const diff = daysBetween(new Date(), TARGET_DATE);
     const $days = $('days');
     const $sub  = $('countdown-sub');
     if (diff > 0) {
@@ -572,209 +710,243 @@
     }
   }
 
-  // ===== Today label =====
-  function renderTodayLabel() {
-    $('today-date-label').textContent = todayKey();
+  // ===== UI: auth banner =====
+  function renderAuthBanner() {
+    const $b = $('auth-banner');
+    const $dot = $('header-dot');
+    if (getToken()) {
+      $b.innerHTML = '';
+      $b.className = '';
+      $dot.classList.remove('off');
+    } else {
+      $b.className = 'auth-banner';
+      $b.innerHTML = `
+        <span>🔑 未配置 GitHub Token —— 配置后才能把想法 / 打分作为 commit 提交。</span>
+        <button id="btn-auth-inline">立即配置</button>
+      `;
+      $dot.classList.add('off');
+      $('btn-auth-inline').addEventListener('click', openAuthModal);
+    }
   }
 
-  // ===== Rating buttons =====
-  function renderRatingButtons(current) {
+  // ===== UI: rating buttons =====
+  let __saving = false;
+  function setSaving(v) {
+    __saving = v;
+    $('btn-save-thought').disabled = v || !getToken();
+    document.querySelectorAll('.rating-btn').forEach(b => b.disabled = v || !getToken());
+    if (v) { $('btn-save-thought').innerHTML = '<span class="spinner-inline"></span>保存中…'; }
+    else   { $('btn-save-thought').textContent = '保存想法'; }
+  }
+
+  function renderRatingButtons(currentScore) {
     const wrap = $('rating-buttons');
     wrap.innerHTML = '';
     for (let i = 1; i <= 10; i++) {
       const b = document.createElement('button');
-      b.className = 'rating-btn' + (current === i ? ' active' : '');
+      b.className = 'rating-btn' + (currentScore === i ? ' active' : '');
       b.textContent = i;
-      b.addEventListener('click', () => onRate(i));
+      b.disabled = __saving || !getToken();
+      b.addEventListener('click', () => onSaveRating(i));
       wrap.appendChild(b);
     }
-    $('rating-value').textContent = current ? current : '—';
+    $('rating-value').textContent = currentScore ? currentScore : '—';
   }
 
-  function onRate(score) {
-    const data = loadData();
-    const key = todayKey();
-    data[key] = data[key] || {};
-    data[key].score = score;
-    data[key].scoreAt = new Date().toISOString();
-    saveData(data);
-    renderAll();
-    toast(`已记录 ${score} / 10`);
+  // ===== Actions =====
+  let __entries = []; // array of {type, createdAt, ...}
+
+  function todayScoreFromEntries() {
+    const today = todayKey();
+    const todayRatings = __entries.filter(e => e.type === 'rating' && e.createdAt.startsWith(today));
+    if (!todayRatings.length) return null;
+    todayRatings.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return todayRatings[0].score;
   }
 
-  // ===== Today's thought =====
-  function renderTodayThought() {
-    const data = loadData();
-    const today = data[todayKey()];
-    const $ta = $('thought-input');
-    const $hint = $('thought-hint');
-    if (today && today.thought) {
-      $ta.value = today.thought;
-      $hint.textContent = `上次保存：${new Date(today.thoughtAt).toLocaleTimeString('zh-CN')}`;
-    } else {
-      $hint.textContent = '';
-    }
-    const r = $('rating-hint');
-    if (today && typeof today.score === 'number') {
-      r.textContent = `上次打分：${new Date(today.scoreAt).toLocaleTimeString('zh-CN')}`;
-    } else {
-      r.textContent = '';
+  async function onSaveThought() {
+    if (!getToken()) { openAuthModal(); return; }
+    const txt = $('thought-input').value.trim();
+    if (!txt) { toast('想法不能为空', true); return; }
+    setSaving(true);
+    try {
+      const entry = {
+        type: 'thought',
+        date: todayKey(),
+        createdAt: new Date().toISOString(),
+        thought: txt,
+      };
+      await createEntryFile(entry, `📝 想法 ${entry.date}: ${txt.slice(0, 50)}${txt.length>50?'…':''}`);
+      $('thought-input').value = '';
+      toast('已保存（一个 commit）');
+      await loadEntries();
+    } catch (e) {
+      toast(`保存失败：${e.message}`, true);
+    } finally {
+      setSaving(false);
     }
   }
 
-  function onSaveThought() {
-    const $ta = $('thought-input');
-    const txt = $ta.value.trim();
-    const data = loadData();
-    const key = todayKey();
-    data[key] = data[key] || {};
-    if (txt) {
-      data[key].thought = txt;
-      data[key].thoughtAt = new Date().toISOString();
-    } else {
-      delete data[key].thought;
-      delete data[key].thoughtAt;
+  async function onSaveRating(score) {
+    if (!getToken()) { openAuthModal(); return; }
+    setSaving(true);
+    try {
+      const entry = {
+        type: 'rating',
+        date: todayKey(),
+        createdAt: new Date().toISOString(),
+        score: score,
+      };
+      await createEntryFile(entry, `⭐ 评分 ${score}/10 (${entry.date})`);
+      toast(`已记录 ${score}/10`);
+      await loadEntries();
+    } catch (e) {
+      toast(`保存失败：${e.message}`, true);
+    } finally {
+      setSaving(false);
     }
-    // clean empty entries
-    if (!data[key].thought && typeof data[key].score !== 'number') {
-      delete data[key];
-    }
-    saveData(data);
-    renderAll();
-    toast(txt ? '已保存今日想法' : '已清空今日想法');
   }
 
-  // ===== History =====
-  function scoreClass(s) {
-    if (s >= 8) return 'high';
-    if (s >= 5) return 'mid';
-    return 'low';
+  // ===== Load + render history =====
+  async function loadEntries() {
+    $('history-list').innerHTML = '<div class="history-empty">加载中…</div>';
+    try {
+      const items = await listEntries();
+      if (!items.length) {
+        __entries = [];
+        renderAll();
+        return;
+      }
+      const datas = await Promise.all(items.map(fetchEntry));
+      __entries = datas.filter(Boolean);
+      __entries.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+      renderAll();
+    } catch (e) {
+      __entries = [];
+      $('history-list').innerHTML = `<div class="history-empty">加载失败：${escapeHtml(e.message)}</div>`;
+      renderStatsAndToday();
+    }
+  }
+
+  function escapeHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s == null ? '' : String(s);
+    return d.innerHTML;
+  }
+
+  function fmtTime(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const Y = d.getFullYear();
+    const M = String(d.getMonth()+1).padStart(2,'0');
+    const D = String(d.getDate()).padStart(2,'0');
+    const h = String(d.getHours()).padStart(2,'0');
+    const m = String(d.getMinutes()).padStart(2,'0');
+    return `${Y}-${M}-${D} ${h}:${m}`;
   }
 
   function renderHistory() {
-    const data = loadData();
-    const keys = Object.keys(data).sort((a, b) => b.localeCompare(a));
     const $list = $('history-list');
-    $('history-count').textContent = keys.length;
-
-    if (!keys.length) {
-      $list.innerHTML = '<div class="panel-body"><div class="history-empty">还没有任何记录，从今天开始吧～</div></div>';
+    $('history-count').textContent = __entries.length;
+    if (!__entries.length) {
+      $list.innerHTML = '<div class="history-empty">还没有任何记录，从今天开始吧～</div>';
       return;
     }
-
+    const blobBase = `https://github.com/${OWNER}/${REPO}/blob/${BRANCH}/`;
     let html = '';
-    for (const k of keys) {
-      const item = data[k];
-      const hasThought = item.thought && item.thought.trim();
-      const hasScore = typeof item.score === 'number';
-      html += `<div class="history-item" data-key="${k}">
-        <div class="history-date">${k}</div>
+    for (const e of __entries) {
+      const isRating = e.type === 'rating';
+      html += `<div class="history-item">
+        <div class="history-date">${escapeHtml(fmtTime(e.createdAt))}</div>
         <div class="history-content">
-          <div class="history-top">
-            ${hasScore ? `<span class="history-score ${scoreClass(item.score)}">⭐ ${item.score}/10</span>` : '<span class="history-score">未打分</span>'}
+          <div>
+            <span class="history-type ${isRating ? 'rating' : 'thought'}">
+              ${isRating ? `⭐ ${escapeHtml(e.score)}/10` : '📝 想法'}
+            </span>
           </div>
-          ${hasThought ? `<div class="history-thought">${escapeHtml(item.thought)}</div>` : '<div class="history-empty">（无想法）</div>'}
-        </div>
-        <div class="history-actions">
-          <button class="delete-btn" data-del="${k}" title="删除这一天">✕</button>
+          ${!isRating && e.thought ? `<div class="history-text">${escapeHtml(e.thought)}</div>` : ''}
+          ${e._path ? `<div class="history-link"><a href="${blobBase}${encodeURI(e._path)}" target="_blank">${escapeHtml(e._path)}</a></div>` : ''}
         </div>
       </div>`;
     }
     $list.innerHTML = html;
-
-    $list.querySelectorAll('[data-del]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const k = btn.getAttribute('data-del');
-        if (!confirm(`确认删除 ${k} 的记录？`)) return;
-        const d = loadData();
-        delete d[k];
-        saveData(d);
-        renderAll();
-        toast('已删除');
-      });
-    });
   }
 
-  function escapeHtml(str) {
-    const d = document.createElement('div');
-    d.textContent = str;
-    return d.innerHTML;
-  }
-
-  // ===== Stats =====
-  function renderStats() {
-    const data = loadData();
-    const keys = Object.keys(data);
-    $('stat-entries').textContent = keys.length;
-
-    const scores = keys.map(k => data[k].score).filter(s => typeof s === 'number');
+  function renderStatsAndToday() {
+    const scores = __entries.filter(e => e.type === 'rating' && typeof e.score === 'number').map(e => e.score);
+    $('stat-entries').textContent = __entries.length;
     $('stat-avg').textContent = scores.length
-      ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1)
+      ? (scores.reduce((a,b)=>a+b,0) / scores.length).toFixed(1)
       : '—';
+    const days = new Set(__entries.map(e => (e.date || (e.createdAt||'').slice(0,10))).filter(Boolean));
+    $('stat-days').textContent = days.size;
 
-    // streak: consecutive days up to today that have any entry
-    let streak = 0;
-    const today = new Date();
-    for (let i = 0; i < 3650; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() - i);
-      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-      if (data[key]) streak++;
-      else break;
-    }
-    $('stat-streak').textContent = streak;
+    $('today-date-label').textContent = todayKey();
+    renderRatingButtons(todayScoreFromEntries());
+  }
+
+  function renderAll() {
+    renderCountdown();
+    renderAuthBanner();
+    renderStatsAndToday();
+    renderHistory();
+    $('btn-save-thought').disabled = !getToken() || __saving;
+  }
+
+  // ===== Modal =====
+  function openAuthModal() {
+    $('token-input').value = getToken();
+    $('modal-mask').classList.add('show');
+    setTimeout(() => $('token-input').focus(), 50);
+  }
+  function closeAuthModal() {
+    $('modal-mask').classList.remove('show');
   }
 
   // ===== Toast =====
   let toastTimer = null;
-  function toast(msg) {
+  function toast(msg, isErr) {
     const el = $('toast');
     el.textContent = msg;
-    el.classList.add('show');
+    el.className = 'toast show' + (isErr ? ' err' : '');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
   }
 
-  // ===== Export =====
-  function onExport() {
-    const data = loadData();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `daily-dashboard-${todayKey()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast('已导出');
-  }
-
-  // ===== Master render =====
-  function renderAll() {
-    renderCountdown();
-    renderTodayLabel();
-    const data = loadData();
-    const today = data[todayKey()];
-    renderRatingButtons(today && typeof today.score === 'number' ? today.score : null);
-    renderTodayThought();
-    renderStats();
-    renderHistory();
-  }
-
-  // ===== Init =====
+  // ===== Wire up =====
   $('btn-save-thought').addEventListener('click', onSaveThought);
-  $('btn-export').addEventListener('click', onExport);
-  // Ctrl/Cmd + Enter to save thought
   $('thought-input').addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      e.preventDefault();
-      onSaveThought();
-    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); onSaveThought(); }
+  });
+  $('btn-refresh').addEventListener('click', loadEntries);
+  $('btn-auth').addEventListener('click', openAuthModal);
+
+  $('btn-token-cancel').addEventListener('click', closeAuthModal);
+  $('btn-token-save').addEventListener('click', () => {
+    const v = $('token-input').value.trim();
+    if (!v) { toast('请输入 Token', true); return; }
+    setToken(v);
+    closeAuthModal();
+    toast('Token 已保存');
+    renderAll();
+    loadEntries();
+  });
+  $('btn-token-clear').addEventListener('click', () => {
+    setToken('');
+    closeAuthModal();
+    toast('Token 已删除');
+    renderAll();
+  });
+  $('modal-mask').addEventListener('click', (e) => {
+    if (e.target.id === 'modal-mask') closeAuthModal();
   });
 
-  renderAll();
-  // refresh countdown on date rollover
+  // ===== Init =====
+  renderCountdown();
+  renderAuthBanner();
+  renderRatingButtons(null);
+  renderStatsAndToday();
+  loadEntries();
   setInterval(renderCountdown, 60 * 1000);
 })();
 </script>
